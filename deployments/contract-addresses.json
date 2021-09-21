@@ -30,13 +30,13 @@
         "HordCongress": "0x819052addBBEd28D7324867788d4e751710807eA",
         "HordCongressMembersRegistry": "0x5bd2F1ac5edfb058113820162d48610AB58747dc",
         "HordToken": "0xf6ffcb59eD9F60c879e97C9Cd02b03f12726b44F",
-        "MaintainersRegistry": "0xcfbc638990C935fd274a8Dc895f562018b821346",
-        "HordTicketManager": "0x8321E81742dAd6c3ECC2b01610878299FB570fFc",
-        "HordTicketFactory": "0x682A8f6C7570CFA030b3E8e38dEB06de95376b9C",
-        "HordTreasury": "0xb2c8C3c9E951E27E94630D2E93F591D4410447E1",
-        "AggregatorV3Interface": "0x7084a255E6Dd0f169da87f81e404d6c7E6d28980",
-        "HordConfiguration": "0x7a37C8c9fF1810c4048577A47D6347263dDfeCd2",
-        "HPoolFactory": "0x3592AC04773Ae6BDfE9c41eEa0A3bAc2FCFD6FBB",
-        "HPoolManager": "0x87CD712E205B4f36b42C14C632aaA867117b6844"
+        "MaintainersRegistry": "0x72005B3f1438e6d0e4141FD3D7c18A4fC2cA0301",
+        "HordTicketManager": "0xBeEE5c010318f2258e8FC774B128411586Fd4dB4",
+        "HordTicketFactory": "0x39CE6f6A0eCFc5bBC03A19d391F8c6B4e35F40e2",
+        "HordTreasury": "0x4550E08282cA135e9E97621523B63b297e081853",
+        "AggregatorV3Interface": "0x46753EA66f524A6f73BDCB9fD9c0458D1E8aFF5d",
+        "HordConfiguration": "0x87de9f01464A888ff87466cC44667C50c598b6E9",
+        "HPoolFactory": "0xAE84b97e1BEdBcfdaf1461C2752F36C309Cb9575",
+        "HPoolManager": "0x6e3c91Ff941590dA94589f922030bD9d35b0c9Dd"
     }
 }

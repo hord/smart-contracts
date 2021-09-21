@@ -34,6 +34,14 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 private _maxSupplyHPoolToken;
     // Representing maximal USD allocation per ticket
     uint256 private _maxUSDAllocationPerTicket;
+    //Total supply for HPoolToken
+    uint256 private _totalSupplyHPoolTokens;
+    //End time for TICKET_SALE phase
+    uint256 private _endTimeTicketSale;
+    //End time for PRIVATE_SUBSCRIPTION phase
+    uint256 private _endTimePrivateSubscription;
+    //End time for PUBLIC_SUBSCRIPTION phase
+    uint256 private _endTimePublicSubscription;
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -53,7 +61,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         uint256 gasUtilizationRatio_,
         uint256 platformStakeRatio_,
         uint256 maxSupplyHPoolToken_,
-        uint256 maxUSDAllocationPerTicket_
+        uint256 maxUSDAllocationPerTicket_,
+        uint256 totalSupplyHPoolTokens_
     ) external initializer {
         // Set hord congress and maintainers registry
         setCongressAndMaintainers(hordCongress_, maintainersRegistry_);
@@ -69,6 +78,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _platformStakeRatio = platformStakeRatio_;
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
         _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
+        _totalSupplyHPoolTokens = totalSupplyHPoolTokens_;
 
         _percentPrecision = 100;
     }
@@ -194,6 +204,39 @@ contract HordConfiguration is HordUpgradable, Initializable {
         );
     }
 
+    // _totalSupplyHPoolTokens setter function
+    function setTotalSupplyHPoolTokens(uint256 totalSupplyHPoolTokens_)
+    external
+    onlyHordCongress
+    {
+        _totalSupplyHPoolTokens = totalSupplyHPoolTokens_;
+        emit ConfigurationChanged("_totalSupplyHPoolTokens", _totalSupplyHPoolTokens);
+    }
+
+    // _endTimeTicketSale setter function
+    function setEndTimeTicketSale(uint256 endTimeTicketSale_)
+    external
+    {
+        _endTimeTicketSale = endTimeTicketSale_;
+        emit ConfigurationChanged("_endTimeTicketSale", _endTimeTicketSale);
+    }
+
+    // _totalSupplyHPoolTokens setter function
+    function setEndTimePrivateSubscription(uint256 endTimePrivateSubscription_)
+    external
+    {
+        _endTimePrivateSubscription = endTimePrivateSubscription_;
+        emit ConfigurationChanged("_endTimePrivateSubscription", _endTimePrivateSubscription);
+    }
+    // _totalSupplyHPoolTokens setter function
+    function setEndTimePublicSubscription(uint256 endTimePublicSubscription_)
+    external
+    {
+        _endTimePublicSubscription = endTimePublicSubscription_;
+        emit ConfigurationChanged("_endTimePublicSubscription", _endTimePublicSubscription);
+    }
+
+
     // Getter Functions
     // _minChampStake getter function
     function minChampStake() external view returns (uint256) {
@@ -254,4 +297,25 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function maxUSDAllocationPerTicket() external view returns (uint256) {
         return _maxUSDAllocationPerTicket;
     }
+
+    // _totalSupplyHPoolTokens getter function
+    function totalSupplyHPoolTokens() external view returns (uint256) {
+        return _totalSupplyHPoolTokens;
+    }
+
+    // _endTimeTicketSale getter function
+    function endTimeTicketSale() external view returns (uint256) {
+        return _endTimeTicketSale;
+    }
+
+    // _endTimePrivateSubscription getter function
+    function endTimePrivateSubscription() external view returns (uint256) {
+        return _endTimePrivateSubscription;
+    }
+
+    // _endTimePublicSubscription getter function
+    function endTimePublicSubscription() external view returns (uint256) {
+        return _endTimePublicSubscription;
+    }
+
 }

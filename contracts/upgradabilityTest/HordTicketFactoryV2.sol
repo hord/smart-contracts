@@ -126,7 +126,7 @@ contract HordTicketFactoryV2 is HordUpgradable, ERC1155PausableUpgradeable {
      */
     function addTokenSupply()
     public
-    view
+    pure
     returns (string memory)
     {
         string memory str = "This was used to add supply in V1";
@@ -149,7 +149,7 @@ contract HordTicketFactoryV2 is HordUpgradable, ERC1155PausableUpgradeable {
 
     function sayIamUpgradedVersion()
     public
-    view
+    pure
     returns (string memory)
     {
         string memory str = "I am Upgraded to V2";

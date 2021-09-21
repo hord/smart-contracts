@@ -9,4 +9,5 @@ pragma solidity 0.6.12;
 interface IHPool {
     function depositBudgetFollowers() external payable;
     function depositBudgetChampion() external payable;
+    function mintHPoolToken(string memory name, string memory symbol, uint256 _totalSupply) external;
 }

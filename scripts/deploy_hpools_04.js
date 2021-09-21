@@ -24,7 +24,8 @@ async function main() {
         config.gasUtilizationRatio,
         config.platformStakeRatio,
         toHordDenomination(config.maxSupplyHPoolToken),
-        toHordDenomination(config.maxUSDAllocationPerTicket)
+        toHordDenomination(config.maxUSDAllocationPerTicket),
+        toHordDenomination(config.totalSupplyHPoolTokens)
     ]);
     await hordConfiguration.deployed();
     console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
@@ -54,7 +55,7 @@ async function main() {
     ]);
     await hPoolManager.deployed();
     console.log('HPoolManager is deployed to:', hPoolManager.address);
-    saveContractProxies(hre.network.name, 'HPoolManager', hPoolFactory.address);
+    saveContractProxies(hre.network.name, 'HPoolManager', hPoolManager.address);
 
     // Setters
     await hPoolFactory.setHPoolManager(hPoolManager.address);

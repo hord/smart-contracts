@@ -23,7 +23,7 @@ module.exports = {
   networks: {
     ropsten: {
       // Infura public nodes
-      url: 'https://ropsten.infura.io/v3/34ee2e319e7945caa976d4d1e24db07f',
+      url: 'https://ropsten.infura.io/v3/3bf15b15a0a74588b3bb3e455375fb54',
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,
@@ -31,7 +31,7 @@ module.exports = {
     },
     ropstenStaging: {
       // Infura public nodes
-      url: 'https://ropsten.infura.io/v3/34ee2e319e7945caa976d4d1e24db07f',
+      url: 'https://ropsten.infura.io/v3/3bf15b15a0a74588b3bb3e455375fb54',
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,

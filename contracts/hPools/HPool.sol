@@ -4,6 +4,7 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 import "../system/HordUpgradable.sol";
 import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
+import "../libraries/SafeMath.sol";
 
 
 /**
@@ -14,21 +15,29 @@ import "./HPoolToken.sol";
  */
 contract HPool is HordUpgradable, HPoolToken {
 
-    IHPoolManager public hPoolManager;
-    IUniswapV2Router01 public uniswapRouter;
+    using SafeMath for uint256;
+    address private constant uniswapAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
+    IHPoolManager public hPoolManager;
+    IUniswapV2Router01 private uniswapRouter;
+
+    uint256 public hPoolId;
     bool public isHPoolTokenMinted;
+    mapping(address => bool) public didUserClaimHPoolTokens;
+    mapping(address => uint256) public amountOfTokens;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
+    event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
 
     modifier onlyHPoolManager {
-        require(msg.sender == address(hPoolManager));
+        require(msg.sender == address(hPoolManager), "Restricted only to HPoolManager.");
         _;
     }
 
     constructor(
+        uint256 _hPoolId,
         address _hordCongress,
         address _hordMaintainersRegistry,
         address _hordPoolManager
@@ -36,8 +45,9 @@ contract HPool is HordUpgradable, HPoolToken {
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
+        hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
-        uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        uniswapRouter = IUniswapV2Router01(uniswapAddress);
     }
 
     function depositBudgetFollowers()
@@ -57,9 +67,9 @@ contract HPool is HordUpgradable, HPoolToken {
     }
 
     function mintHPoolToken(
-        string memory name, //TODO take from backend : "Hord.app Pool Token - <Champion Name> - Gen <Nonce>" (e.g. Hord.app Pool Token - TheMoonWalker - Gen1)
-        string memory symbol, //TODO take from backend : HPOOL-<HPOOLID>
-        uint256 _totalSupply  //TODO take from configs
+        string memory name,
+        string memory symbol,
+        uint256 _totalSupply
     )
     external
     onlyHPoolManager
@@ -73,7 +83,19 @@ contract HPool is HordUpgradable, HPoolToken {
         emit HPoolTokenMinted(name, symbol, _totalSupply);
     }
 
-    //TODO: work in sigs
+    function claimHPoolTokens()
+    external
+    {
+        require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
+
+        uint256 numberOfTokensToClaim = getNumberOfTokensUserCanClaim(msg.sender);
+        _transfer(address(this), msg.sender, numberOfTokensToClaim);
+
+        didUserClaimHPoolTokens[msg.sender] = true;
+
+        emit ClaimedHPoolTokens(msg.sender, numberOfTokensToClaim);
+    }
+
     function swapExactTokensForEth(
         address token,
         uint amountIn,
@@ -87,16 +109,19 @@ contract HPool is HordUpgradable, HPoolToken {
         path[0] = token;
         path[1] = uniswapRouter.WETH();
 
-        uniswapRouter.swapExactTokensForETH(
+        uint256[] memory amounts = uniswapRouter.swapExactTokensForETH(
             amountIn,
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[token] = amountOfTokens[token].sub(amounts[0]);
+        amountOfTokens[path[1]] = amountOfTokens[path[1]].add(amounts[1]);
     }
 
-    //TODO: workin sigs
+
     function swapExactEthForTokens(
         address token,
         uint amountOutMin,
@@ -110,15 +135,17 @@ contract HPool is HordUpgradable, HPoolToken {
         path[0] = uniswapRouter.WETH();
         path[1] = token;
 
-        uniswapRouter.swapExactETHForTokens(
+        uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[path[0]] = amountOfTokens[path[0]].sub(amounts[0]);
+        amountOfTokens[token] = amountOfTokens[token].add(amounts[1]);
     }
 
-    //TODO workin sigs
     function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
@@ -130,17 +157,38 @@ contract HPool is HordUpgradable, HPoolToken {
     {
         require(msg.sender.balance >= amountIn);
         address[] memory path = new address[](2);
-        path[0] = tokenA;
-        path[1] = tokenB;
 
-        uniswapRouter.swapExactTokensForTokens(
+        path[0] = tokenA;
+        path[1] = uniswapRouter.WETH();
+        path[2] = tokenB;
+
+        uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[tokenA] = amountOfTokens[tokenA].sub(amounts[0]);
+        amountOfTokens[tokenB] = amountOfTokens[tokenB].add(amounts[2]);
     }
 
+    function getNumberOfTokensUserCanClaim(address follower)
+    public
+    view
+    returns (uint256)
+    {
+
+        if(didUserClaimHPoolTokens[follower]) {
+            return 0;
+        }
+
+        (uint256 subscriptionETHUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
+        (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
+
+        uint256 tokensForClaiming = subscriptionETHUser.mul(totalSupply()).div(totalFollowerDeposit);
+        return tokensForClaiming;
+    }
 
 }

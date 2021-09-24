@@ -45,9 +45,10 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     /**
      * @notice          Function to deploy hPool, only callable by HPoolManager
      */
-    function deployHPool() external onlyHPoolManager returns (address) {
+    function deployHPool(uint256 hPoolId) external onlyHPoolManager returns (address) {
         // Deploy the HPool contract
         HPool hpContract = new HPool(
+            hPoolId,
             hordCongress,
             address(maintainersRegistry),
             hPoolManager

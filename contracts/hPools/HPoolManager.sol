@@ -59,7 +59,11 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         uint256 championEthDeposit;
         address championAddress;
         uint256 createdAt;
+        uint256 endTicketSalePhase;
+        uint256 endPrivateSubscriptionPhase;
+        uint256 endPublicSubscriptionSalePhase;
         uint256 nftTicketId;
+        uint256 numberOfTicketsUsed;
         bool isValidated;
         uint256 followersEthDeposit;
         address hPoolContractAddress;
@@ -229,6 +233,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
+        hp.endTicketSalePhase = block.timestamp + hordConfiguration.endTimeTicketSale();
 
         emit TicketIdSetForPool(poolId, hp.nftTicketId);
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -249,6 +254,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         require(hp.poolState == PoolState.TICKET_SALE);
         hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
+        hp.endPrivateSubscriptionPhase = block.timestamp + hordConfiguration.endTimePrivateSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -288,6 +294,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
+        hp.numberOfTicketsUsed = hp.numberOfTicketsUsed.add(numberOfTicketsToUse);
 
         hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
@@ -308,8 +315,12 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         hPool storage hp = hPools[poolId];
 
+        uint256 maxTicketsToUse = getRequiredNumberOfTicketsToUse(hordConfiguration.maxFollowerUSDStake());
+
+        require(block.timestamp >= hp.endPrivateSubscriptionPhase || hp.numberOfTicketsUsed < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
+        hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -345,7 +356,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhaseAndInitHPool(uint256 poolId)
+    function endSubscriptionPhaseAndInitHPool(uint256 poolId, string memory name, string memory symbol)
         external
         onlyMaintainer
     {
@@ -362,7 +373,10 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
-        IHPool hpContract = IHPool(hPoolFactory.deployHPool());
+        IHPool hpContract = IHPool(hPoolFactory.deployHPool(poolId));
+
+        //Mint HPoolToken for certain HPool
+        hpContract.mintHPoolToken(name, symbol, hordConfiguration.totalSupplyHPoolTokens());
 
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
@@ -602,6 +616,33 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
+     * @notice          Function to get all subscribed addresses on one hPool
+     */
+    function getSubscribedAddresses(uint256 poolId, uint256 startIndex, uint256 endIndex)
+    external
+    view
+    returns (address[] memory)
+    {
+        address[] memory subscribedAddresses = new address[](endIndex - startIndex);
+        uint256 counter;
+
+        for (uint256 i = startIndex; i < endIndex; i++) {
+            subscribedAddresses[counter] = poolIdToSubscriptions[poolId][i].user;
+            counter++;
+        }
+
+        return subscribedAddresses;
+    }
+
+    function getNumberOfTicketsUsed(uint256 poolId)
+    external
+    view
+    returns (uint256)
+    {
+        return hPools[poolId].numberOfTicketsUsed;
+    }
+
+    /**
      * @notice          Function to get user subscription for the pool.
      * @param           poolId is the ID of the pool
      * @param           user is the address of user
@@ -635,6 +676,9 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
             bool,
             uint256,
             address,
+            uint256,
+            uint256,
+            uint256,
             uint256
         )
     {
@@ -650,7 +694,10 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
             hp.isValidated,
             hp.followersEthDeposit,
             hp.hPoolContractAddress,
-            hp.treasuryFeePaid
+            hp.treasuryFeePaid,
+            hp.endTicketSalePhase,
+            hp.endPrivateSubscriptionPhase,
+            hp.endPublicSubscriptionSalePhase
         );
     }
 }

@@ -222,7 +222,7 @@ contract HordCongress {
         if (support) {
             proposal.forVotes = proposal.forVotes.add(1);
         } else {
-            proposal.againstVotes = proposal.againstVotes.add(1);
+            proposal.againstVotes = proposal.againstVotes.sub(1);
         }
 
         receipt.hasVoted = true;

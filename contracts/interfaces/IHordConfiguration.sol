@@ -19,4 +19,8 @@ interface IHordConfiguration {
     function percentPrecision() external view returns(uint256);
     function maxSupplyHPoolToken() external view returns(uint256);
     function maxUSDAllocationPerTicket() external view returns (uint256);
+    function totalSupplyHPoolTokens() external view returns (uint256);
+    function endTimeTicketSale() external view returns (uint256);
+    function endTimePrivateSubscription() external view returns (uint256);
+    function endTimePublicSubscription() external view returns (uint256);
 }

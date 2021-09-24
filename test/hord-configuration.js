@@ -26,21 +26,25 @@ async function setupContractAndAccounts () {
 
     const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
     hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
-            hordCongressAddr,
-            maintainersRegistry.address,
-            config["minChampStake"],
-            config["maxWarmupPeriod"],
-            config["maxFollowerOnboardPeriod"],
-            config["minFollowerEthStake"],
-            config["maxFollowerEthStake"],
-            config["minStakePerPoolTicket"],
-            config["assetUtilizationRatio"],
-            config["gasUtilizationRatio"],
-            config["platformStakeRatio"],
-            config["maxSupplyHPoolToken"],
-            config["maxUSDAllocationPerTicket"]
+                [hordCongressAddr, maintainersRegistry.address],
+                [config["minChampStake"],
+                config["maxWarmupPeriod"],
+                config["maxFollowerOnboardPeriod"],
+                config["minFollowerEthStake"],
+                config["maxFollowerEthStake"],
+                config["minStakePerPoolTicket"],
+                config["assetUtilizationRatio"],
+                config["gasUtilizationRatio"],
+                config["platformStakeRatio"],
+                config["maxSupplyHPoolToken"],
+                config["maxUSDAllocationPerTicket"],
+                config["totalSupplyHPoolTokens"],
+                config["endTimeTicketSale"],
+                config["endTimePrivateSubscription"],
+                config["endTimePublicSubscription"]]
         ]
     );
+
     await hordConfiguration.deployed()
 }
 
@@ -134,5 +138,32 @@ describe('HordConfiguration', async() => {
             .to.be.equal(maxUSDAllocationPerTicket);
     });
 
+    it('should check return values in totalSupplyHPoolTokens function', async() => {
+        let totalSupplyHPoolTokens = config["totalSupplyHPoolTokens"];
+        await hordConfiguration.connect(hordCongress).setTotalSupplyHPoolTokens(totalSupplyHPoolTokens);
+        expect(await hordConfiguration.totalSupplyHPoolTokens())
+            .to.be.equal(totalSupplyHPoolTokens);
+    });
+
+    it('should check return values in totalSupplyHPoolTokens function', async() => {
+        let endTimeTicketSale = 10;
+        await hordConfiguration.connect(hordCongress).setEndTimeTicketSale(endTimeTicketSale);
+        expect(await hordConfiguration.endTimeTicketSale())
+            .to.be.equal(endTimeTicketSale);
+    });
+
+    it('should check return values in totalSupplyHPoolTokens function', async() => {
+        let endTimePrivateSubscription = 10;
+        await hordConfiguration.connect(hordCongress).setEndTimePrivateSubscription(endTimePrivateSubscription);
+        expect(await hordConfiguration.endTimePrivateSubscription())
+            .to.be.equal(endTimePrivateSubscription);
+    });
+
+    it('should check return values in endTimePublicSubscription function', async() => {
+        let endTimePublicSubscription = 10;
+        await hordConfiguration.connect(hordCongress).setEndTimePublicSubscription(endTimePublicSubscription);
+        expect(await hordConfiguration.endTimePublicSubscription())
+            .to.be.equal(endTimePublicSubscription);
+    });
 
 });

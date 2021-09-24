@@ -4,6 +4,7 @@ module.exports = {
         'libraries/',
         'token/Context.sol',
         'upgradabilityTest/',
-        'hPools/'
+        'SignatureValidator.sol',
+        'hPools/HPool.sol'
     ]
 };
